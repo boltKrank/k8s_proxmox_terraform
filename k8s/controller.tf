@@ -1,7 +1,7 @@
 resource "proxmox_vm_qemu" "controller-vm" {
 
-  depends_on = [ proxmox_vm_qemu.bootstrap-vm
-   ]
+#   depends_on = [ proxmox_vm_qemu.bootstrap-vm
+#    ]
 
   count = var.controller_count
   name = "kube-controller-0${count.index + 1}"
@@ -11,10 +11,10 @@ resource "proxmox_vm_qemu" "controller-vm" {
   clone = var.template_name
   agent = 1
   os_type = "cloud-init"
-  cores = 2
-  sockets = 1
+  cores = var.bootstrap_cores
+  sockets = var.bootstrap_sockets
   cpu = "host"
-  memory = 8192
+  memory = var.bootstrap_memory
   scsihw = "virtio-scsi-pci"
   bootdisk = "scsi0"
 
@@ -25,7 +25,7 @@ resource "proxmox_vm_qemu" "controller-vm" {
     scsi {
       scsi0 {
         disk {
-          size = 30
+          size = var.bootstrap_hdd_size
           storage = "local-zfs"
         }
       }
@@ -33,23 +33,33 @@ resource "proxmox_vm_qemu" "controller-vm" {
   }
 
   # if you want two NICs, just copy this whole network section and duplicate it
+#   network {
+#     model = "virtio"
+#     bridge = "vmbr0"
+#     # macaddr = "b6:c1:18:57:0e:7f"
+#   }
+
   network {
     model = "virtio"
-    bridge = "vmbr0"
+    bridge = "vmbr10"
     # macaddr = "b6:c1:18:57:0e:7f"
   }
 
   lifecycle {
     ignore_changes = [
-      network #, disk, sshkeys, target_node, ciuser
+      network,
     ]
   }
 
-  # define_connection_info = true
+  # The main LAN network is 192.168.0.0/24. gw=192.168.20.1, and the Kube internal network (on its own bridge) is 10.20.0.0/24.
 
-#   os_network_config = <<EOF
-#     auto eth0
-#     iface eth0 inet dhcp
-#   EOF
+  # ipconfig0 = "ip=192.168.20.8${count.index + 1}/24,gw=192.168.20.1"
+  ipconfig0 = "ip=10.240.0.5${count.index + 1}/24"
+
+  #TODO: https://pve.proxmox.com/pve-docs/chapter-sysadmin.html#_routed_configuration
+
+  sshkeys = <<EOF
+  ${var.ssh_public_key}
+  EOF
 
 }
