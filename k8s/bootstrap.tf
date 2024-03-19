@@ -1,52 +1,56 @@
-# resource "proxmox_vm_qemu" "bootstrap-vm" {
+resource "proxmox_vm_qemu" "bootstrap-vm" {
 
-#   name = var.bootstrap_vm_name
-#   desc = "VM for bootstrapping"
-#   target_node = var.proxmox_host
+  name = var.bootstrap_vm_name
+  desc = "VM for bootstrapping"
+  target_node = var.proxmox_host
 
-#   ## Clone from existing VM
-#   clone = var.template_name
-#   agent = 1
-#   os_type = "cloud-init"
-#   cores = var.bootstrap_cores
-#   sockets = var.bootstrap_sockets
-#   cpu = "host"
-#   memory = var.bootstrap_memory
-#   scsihw = "virtio-scsi-pci"
-#   bootdisk = "scsi0"
+  ## Clone from existing VM
+  clone = var.template_name
+  agent = 1
+  os_type = "cloud-init"
+  cores = var.bootstrap_cores
+  sockets = var.bootstrap_sockets
+  cpu = "host"
+  memory = var.bootstrap_memory
+  scsihw = "virtio-scsi-pci"
+  bootdisk = "scsi0"
 
-#   ciuser = var.ssh_user
-#   cipassword = var.ssh_user_password
+  # ciuser = var.ssh_user
+  # cipassword = var.ssh_user_password
   
-#   disks {
-#     scsi {
-#       scsi0 {
-#         disk {
-#           size = var.bootstrap_hdd_size
-#           storage = "local-zfs"
-#         }
-#       }
-#     }
-#   }
+  disks {
+    scsi {
+      scsi0 {
+        disk {
+          size = var.bootstrap_hdd_size
+          storage = "local-zfs"
+        }
+      }
+    }
+  }
 
-#   # if you want two NICs, just copy this whole network section and duplicate it
-#   network {
-#     model = "virtio"
-#     bridge = var.bootstrap_network_bridge
-#     macaddr = var.bootstrap_mac_address
-#   }
+  # if you want two NICs, just copy this whole network section and duplicate it
+  network {
+    model = "virtio"
+    bridge = "vmbr0"
+    macaddr = var.bootstrap_mac_address
+  }
 
-#   network {
-#     model = "virtio"
-#     bridge = "vmbr10"
-#     # macaddr = "b6:c1:18:57:0e:7f"
-#   }
+  network {
+    model = "virtio"
+    bridge = "vmbr10"    
+    # macaddr = "b6:c1:18:57:0e:7f"
+  }
 
 #   lifecycle {
 #     ignore_changes = [
 #       network, disk, sshkeys, target_node, ciuser
 #     ]
 #   }
+
+  # ipconfig1 = "ip=10.240.0.4${count.index + 1}/24"
+  #  ipconfig1 = "ip=10.240.0.41/24"
+
 
 #   define_connection_info = true
 
@@ -79,4 +83,4 @@
 #                "sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl"
 #                 ]  
 #   }
-# }
+}
