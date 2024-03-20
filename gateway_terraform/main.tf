@@ -2,7 +2,7 @@ terraform {
   required_providers {
     proxmox = {
       source  = "telmate/proxmox"
-      version = "3.0.1-rc1"    
+      version = "3.0.1-rc1"          
     }
   }
 }
@@ -15,6 +15,7 @@ provider "proxmox" {
   pm_api_token_secret = var.pm_api_token_secret
   pm_tls_insecure = true
   pm_debug = false  
+  pm_parallel = 10
 
 }
 
@@ -47,6 +48,7 @@ resource "proxmox_vm_qemu" "gateway-vm" {
     }
   }
 
+
   # TODO: Check bug (https://github.com/Telmate/terraform-provider-proxmox/blob/3eacccdc82edd5b8c10835bc8b81ab819273f667/proxmox/resource_vm_qemu.go#L1899)
 
   # External bridge
@@ -69,22 +71,43 @@ resource "proxmox_vm_qemu" "gateway-vm" {
     ]
   }
 
-#   define_connection_info = true
+  define_connection_info = true
 
-#   os_network_config = <<EOF
+  os_network_config = <<EOF
+    source /etc/network/interfaces.d/*
 
-#   EOF
+      # The loopback network interface
+      auto lo
+      iface lo inet loopback
 
-  connection {
-    type = "ssh"
-    user = var.ssh_user
-    private_key = file("${path.module}/keys/tom.pem")
-    host = self.default_ipv4_address
-  }
+      # The public network interface
+      auto ens18
+      allow-hotplug ens18
+      iface ens18 inet static
+              address 192.168.20.35/24
+              gateway 192.168.20.1
+              dns-nameservers 9.9.9.9
 
-  provisioner "remote-exec" {
-    inline = [ "ip a" ]
-  }
+      # The private network interface
+      auto ens19
+      allow-hotplug ens19
+      iface ens19 inet static
+              address 192.168.8.1/24
+              dns-nameservers 9.9.9.9
+  EOF
+
+  # BLOCKER: no IP resolving on VM
+
+  # connection {
+  #   type = "ssh"
+  #   user = var.ssh_user
+  #   private_key = file("${path.module}/keys/tom.pem")
+  #   host = self.default_ipv4_address
+  # }
+
+  # provisioner "remote-exec" {
+  #   inline = [ "ip a" ]
+  # }
 
 #   provisioner "remote-exec" {
 #     inline = [ "wget https://go.dev/dl/go1.22.1.linux-amd64.tar.gz",

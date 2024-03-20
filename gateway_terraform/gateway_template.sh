@@ -9,7 +9,7 @@ virt-customize -a debian-12-generic-amd64.qcow2 --hostname 'gateway-01'
 virt-customize -a debian-12-generic-amd64.qcow2 --run-command 'apt-get update && apt-get upgrade -y'
 virt-customize -a debian-12-generic-amd64.qcow2 --install qemu-guest-agent,wget,ssh,vim,tmux,curl,ntp,git,make #,iptables-persistent
 # virt-customize -a debian-12-generic-amd64.qcow2 --run-command 'apt-get install ssh vim tmux curl ntp iptables-persistent -y'
-virt-customize -a debian-12-generic-amd64.qcow2 --run-command 'systemctl enable ntpsec; systemctl start ntpsec; systemctl enable ssh; systemctl start ssh'
+virt-customize -a debian-12-generic-amd64.qcow2 --run-command 'systemctl enable qemu-guest-agent; systemctl start qemu-guest-agent; systemctl enable ntpsec; systemctl start ntpsec; systemctl enable ssh; systemctl start ssh'
 virt-customize -a debian-12-generic-amd64.qcow2 --run-command 'ssh-keygen -A; systemctl restart ssh.service'
 # virt-customize -a debian-12-generic-amd64.qcow2 --run-command "echo 'net.ipv4.ip_forward=1' >> /etc/sysctl.conf"
 # virt-customize -a debian-12-generic-amd64.qcow2 --run-command "echo '1' > /proc/sys/net/ipv4/ip_forward"
