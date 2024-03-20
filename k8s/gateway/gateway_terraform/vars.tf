@@ -29,10 +29,6 @@ variable "ssh_public_key" {
   type = string
 }
 
-variable "bootstrap_vm_name" {
-  type = string
-}
-
 variable "ssh_user_password" {
   type = string
 }
